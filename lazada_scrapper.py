@@ -17,13 +17,17 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 
 from colorama import Fore, Back, Style
 
 def init_driver():
     options = webdriver.ChromeOptions()
-    options.add_argument("--headless")
+    #options.add_argument("--headless")
     #options.add_argument("--disable-gpu")
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options = options)
 
@@ -51,17 +55,49 @@ def get_product_price(driver, class_name):
 
 def scrape_lazada(driver, links, start, end):
     data = []
+    driver.set_page_load_timeout(3);
+
     print(Fore.BLUE + "STARTED SELENIUM SCRAPPING")
     for i in range(start, end):
-        driver.get(links[i])
         product = {}
-        product["link"] = links[i]
-        product["product_name"] = get_product_name(driver, "pdp-mod-product-badge-title")
-        product["product_price"] = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
-        data.append(product)
-        time.sleep(10)
+        try:
+            driver.get(links[i])
+            product["link"] = links[i]
+            product_name = get_product_name(driver, "pdp-mod-product-badge-title")
+            print("IN TRY NAME: " + product_name)
+            product["product_name"] = product_name
+            product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
+            print("IN TRY EXCEPT: " + product_name)
+            product["product_price"] = product_price
+            data.append(product)
+            #time.sleep(10)
+        except:
+            actions = ActionChains(driver)
+            actions.send_keys(Keys.ESCAPE).perform()
+            product["link"] = links[i]
+            product_name = get_product_name(driver, "pdp-mod-product-badge-title")
+            print("IN EXCEPT NAME: " + product_name)
+            print(product_name)
+            product["product_name"] = product_name
+            product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
+            print("IN EXCEPT PRICE: " + product_name)
+            product["product_price"] = product_price
+            data.append(product)
         print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
     print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
+    driver.quit()
+
+    #print(Fore.BLUE + "STARTED SELENIUM SCRAPPING")
+    #for i in range(start, end):
+    #    driver.get(links[i])
+    #    product = {}
+    #    product["link"] = links[i]
+    #    product["product_name"] = get_product_name(driver, "pdp-mod-product-badge-title")
+    #    product["product_price"] = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
+    #    data.append(product)
+    #    time.sleep(10)
+    #    print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
+    #print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
     return data
 
 def scrape_lazada_beautifulsoup(links, start, end):
@@ -148,16 +184,16 @@ def fuzzy_search(exported_data, products_csv_data, options):
 
     return total_matches
 
-#lazada_links = get_lazada_link("lazada_links.csv")
-#driver = init_driver()
-#start = random.randint(0, 66)
-#data = scrape_lazada(driver, lazada_links, start, min(66, start + 30))
-#save_lazada_data(data)
+lazada_links = get_lazada_link("lazada_links.csv")
+driver = init_driver()
+start = random.randint(0, 66)
+data = scrape_lazada(driver, lazada_links, 0, 5)
+save_lazada_data(data)
 
 #lazada_links = get_lazada_link("lazada_links.csv")
 #start = random.randint(0, 66)
 #data = scrape_lazada_beautifulsoup(lazada_links, 0, 66)
 #save_lazada_data(data)
 
-total_matches = fuzzy_search(get_exported_data(), get_products_csv(), 1)
-print("Matched " + str(sum([m is not None for m in total_matches]) / len(total_matches) * 100) + "%")
+#total_matches = fuzzy_search(get_exported_data(), get_products_csv(), 1)
+#print("Matched " + str(sum([m is not None for m in total_matches]) / len(total_matches) * 100) + "%")
