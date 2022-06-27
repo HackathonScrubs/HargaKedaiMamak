@@ -62,42 +62,22 @@ def scrape_lazada(driver, links, start, end):
         product = {}
         try:
             driver.get(links[i])
-            product["link"] = links[i]
-            product_name = get_product_name(driver, "pdp-mod-product-badge-title")
-            print("IN TRY NAME: " + product_name)
-            product["product_name"] = product_name
-            product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
-            print("IN TRY EXCEPT: " + product_name)
-            product["product_price"] = product_price
             data.append(product)
             #time.sleep(10)
         except:
             actions = ActionChains(driver)
             actions.send_keys(Keys.ESCAPE).perform()
-            product["link"] = links[i]
-            product_name = get_product_name(driver, "pdp-mod-product-badge-title")
-            print("IN EXCEPT NAME: " + product_name)
-            print(product_name)
-            product["product_name"] = product_name
-            product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
-            print("IN EXCEPT PRICE: " + product_name)
-            product["product_price"] = product_price
-            data.append(product)
+        product["link"] = links[i]
+        product_name = get_product_name(driver, "pdp-mod-product-badge-title")
+        print(product_name)
+        product["product_name"] = product_name
+        product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
+        product["product_price"] = product_price
+        data.append(product)
         print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
+
     print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
     driver.quit()
-
-    #print(Fore.BLUE + "STARTED SELENIUM SCRAPPING")
-    #for i in range(start, end):
-    #    driver.get(links[i])
-    #    product = {}
-    #    product["link"] = links[i]
-    #    product["product_name"] = get_product_name(driver, "pdp-mod-product-badge-title")
-    #    product["product_price"] = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
-    #    data.append(product)
-    #    time.sleep(10)
-    #    print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
-    #print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
     return data
 
 def scrape_lazada_beautifulsoup(links, start, end):
@@ -187,7 +167,7 @@ def fuzzy_search(exported_data, products_csv_data, options):
 lazada_links = get_lazada_link("lazada_links.csv")
 driver = init_driver()
 start = random.randint(0, 66)
-data = scrape_lazada(driver, lazada_links, 0, 5)
+data = scrape_lazada(driver, lazada_links, 0, 10)
 save_lazada_data(data)
 
 #lazada_links = get_lazada_link("lazada_links.csv")
