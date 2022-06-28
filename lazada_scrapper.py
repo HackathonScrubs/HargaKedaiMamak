@@ -56,26 +56,23 @@ def get_product_price(driver, class_name):
 def scrape_lazada(driver, links, start, end):
     data = []
     driver.set_page_load_timeout(3);
-
-    print(Fore.BLUE + "STARTED SELENIUM SCRAPPING")
+    print(Fore.BLUE + "STARTED SELENIUM SCRAPPING" + Fore.RESET)
     for i in range(start, end):
         product = {}
         try:
             driver.get(links[i])
-            data.append(product)
             #time.sleep(10)
         except:
             actions = ActionChains(driver)
             actions.send_keys(Keys.ESCAPE).perform()
         product["link"] = links[i]
         product_name = get_product_name(driver, "pdp-mod-product-badge-title")
-        print(product_name)
+        #print(product_name)
         product["product_name"] = product_name
         product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
         product["product_price"] = product_price
         data.append(product)
         print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
-
     print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
     driver.quit()
     return data
@@ -167,8 +164,13 @@ def fuzzy_search(exported_data, products_csv_data, options):
 lazada_links = get_lazada_link("lazada_links.csv")
 driver = init_driver()
 start = random.randint(0, 66)
-data = scrape_lazada(driver, lazada_links, 0, 10)
-save_lazada_data(data)
+
+format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
+logging.info("Started Scraping Time")
+data = scrape_lazada(driver, lazada_links, 0, 66)
+logging.info("Finished Scraping Time")
+#save_lazada_data(data)
 
 #lazada_links = get_lazada_link("lazada_links.csv")
 #start = random.randint(0, 66)
