@@ -7,20 +7,25 @@ import re
 import threading
 import logging
 import time
+from datetime import datetime
 # from hmni import hmni
 from xml.dom.minidom import TypeInfo
+
 import rapidfuzz
 from thefuzz import fuzz, process
-from datetime import datetime
+
+from webdriver_manager.chrome import ChromeDriverManager
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
+
 from bs4 import BeautifulSoup
 
 from colorama import Fore, Back, Style
@@ -47,38 +52,61 @@ def save_lazada_data(data):
             row = [product["link"], product["product_name"], product["product_price"]]
             csv_writer.writerow(row)
 
-def get_product_name(driver, class_name):
-    return driver.find_element(By.XPATH, "//h1[@class = '" + class_name + "']").text
+def get_product_name(driver):
+    return driver.find_element(By.XPATH, "//h1[@class = '" + "pdp-mod-product-badge-title" + "']").text
 
-def get_product_price(driver, class_name):
-    return driver.find_element(By.XPATH, "//span[@class = '" + class_name + "']").text
+def get_product_price(driver):
+    return driver.find_element(By.XPATH, "//span[@class = '" + "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl" + "']").text
+
+def get_product_stock(driver):
+    try:
+        return driver.find_element(By.XPATH, "//span[@class = '" + "quantity-content-default" + "']").text
+    except NoSuchElementException:
+        return driver.find_element(By.XPATH, "//span[@class = '" + "quantity-content-warning" + "']").text
 
 def scrape_lazada(driver, links, start, end):
     data = []
     driver.set_page_load_timeout(3);
-
-    print(Fore.BLUE + "STARTED SELENIUM SCRAPPING")
+    print(Fore.BLUE + "STARTED SELENIUM SCRAPPING" + Fore.RESET)
     for i in range(start, end):
         product = {}
         try:
             driver.get(links[i])
-            data.append(product)
             #time.sleep(10)
         except:
             actions = ActionChains(driver)
             actions.send_keys(Keys.ESCAPE).perform()
         product["link"] = links[i]
-        product_name = get_product_name(driver, "pdp-mod-product-badge-title")
-        print(product_name)
+        product_name = get_product_name(driver)
         product["product_name"] = product_name
-        product_price = get_product_price(driver, "pdp-price pdp-price_type_normal pdp-price_color_orange pdp-price_size_xl")
+        product_price = get_product_price(driver)
         product["product_price"] = product_price
         data.append(product)
         print(Fore.GREEN + "Completed scrapping URL (" , i+1 , "/" , end-start , ")" + links[i])
-
     print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
     driver.quit()
     return data
+
+def scrape_lazada_one(driver):
+    driver.set_page_load_timeout(3)
+    print(Fore.BLUE + "STARTED SELENIUM SCRAPPING" + Fore.RESET)
+    product = {}
+    try:
+        driver.get("https://www.lazada.com.my/products/huawei-matepad-t10s-23gb3264gb-original-huawei-malaysai-ready-stock-i2019269555-s8017813986.html")
+    except:
+        actions = ActionChains(driver)
+        actions.send_keys(Keys.ESCAPE).perform()
+    product["link"] = "https://www.lazada.com.my/products/huawei-matepad-t10s-23gb3264gb-original-huawei-malaysai-ready-stock-i2019269555-s8017813986.html"
+    product_name = get_product_name(driver)
+    product["product_name"] = product_name
+    product_price = get_product_price(driver)
+    product["product_price"] = product_price
+    product_stock = get_product_stock(driver)
+    product["product_stock"] = product_stock
+    print(product_stock)
+    print(Fore.GREEN + "FINISHED SELENIUM SCRAPPING")
+    print(product)
+    driver.quit()
 
 def scrape_lazada_beautifulsoup(links, start, end):
     data = []
@@ -167,8 +195,15 @@ def fuzzy_search(exported_data, products_csv_data, options):
 lazada_links = get_lazada_link("lazada_links.csv")
 driver = init_driver()
 start = random.randint(0, 66)
-data = scrape_lazada(driver, lazada_links, 0, 10)
-save_lazada_data(data)
+
+format = "%(asctime)s: %(message)s"
+logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
+#logging.info("Started Scraping Time")
+#data = scrape_lazada(driver, lazada_links, 0, 66)
+#logging.info("Finished Scraping Time")
+#save_lazada_data(data)
+
+data = scrape_lazada_one(driver)
 
 #lazada_links = get_lazada_link("lazada_links.csv")
 #start = random.randint(0, 66)
