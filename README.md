@@ -54,7 +54,7 @@ output.csv
 # Team
 - [Ding Hang](https://github.com/Hanswong42) <br>
 - [Nazrin](https://github.com/nazrinshahaf) <br>
-- [Eu Lee](https://github.com/42EuLee) <br>
+- [Eu Lee](https://github.com/lokeulee) <br>
 - [Yun Zhe](https://github.com/hooyunzhe) <br>
 
 # References
