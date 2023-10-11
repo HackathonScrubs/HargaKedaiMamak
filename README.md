@@ -52,7 +52,7 @@ output.csv
 ```
 
 # Team
-- [Ding Hang](https://github.com/Hanswong42) <br>
+- [Ding Hang](https://github.com/HansWongDH) <br>
 - [Nazrin](https://github.com/nazrinshahaf) <br>
 - [Eu Lee](https://github.com/lokeulee) <br>
 - [Yun Zhe](https://github.com/hooyunzhe) <br>
